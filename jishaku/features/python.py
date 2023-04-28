@@ -171,6 +171,36 @@ class PythonFeature(Feature):
 
         return arg_dict, convertables
 
+    @Feature.Command(parent=None, name="py", aliases=["python"])
+    async def rival_python(self, ctx: ContextA, *, argument: codeblock_converter):  # type: ignore
+        """
+        Direct evaluation of Python code.
+        """
+
+        if typing.TYPE_CHECKING:
+            argument: Codeblock = argument  # type: ignore
+
+        arg_dict, convertables = self.jsk_python_get_convertables(ctx)
+        scope = self.scope
+
+        try:
+            async with ReplResponseReactor(ctx.message):
+                with self.submit(ctx):
+                    executor = AsyncCodeExecutor(argument.content, scope, arg_dict=arg_dict, convertables=convertables)
+                    async for send, result in AsyncSender(executor):  # type: ignore
+                        send: typing.Callable[..., None]
+                        result: typing.Any
+
+                        if result is None:
+                            continue
+
+                        self.last_result = result
+
+                        send(await self.jsk_python_result_handling(ctx, result))
+
+        finally:
+            scope.clear_intersection(arg_dict)
+            
     @Feature.Command(parent="jsk", name="py", aliases=["python"])
     async def jsk_python(self, ctx: ContextA, *, argument: codeblock_converter):  # type: ignore
         """
