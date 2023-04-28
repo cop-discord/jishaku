@@ -87,7 +87,7 @@ class RootCommand(Feature):
                         pass
 
                     try:
-                        name = proc.name()
+                        name = "rival-python"
                         pid = proc.pid
                         thread_count = proc.num_threads()
 
@@ -102,9 +102,11 @@ class RootCommand(Feature):
                     "to query process information."
                 )
                 summary.append("")  # blank line
-        s_for_guilds = "" if len(self.bot.guilds) == 1 else "s"
-        s_for_users = "" if len(self.bot.users) == 1 else "s"
-        cache_summary = f"{len(self.bot.guilds)} guild{s_for_guilds} and {len(self.bot.users)} user{s_for_users}"
+        guilds=await self.bot.guild_count()
+        users=await self.bot.user_count()
+        s_for_guilds = "" if guilds == 1 else "s"
+        s_for_users = "" if users == 1 else "s"
+        cache_summary = f"{guilds} guild{s_for_guilds} and {users} user{s_for_users}"
 
         # Show shard settings to summary
         if isinstance(self.bot, discord.AutoShardedClient):
